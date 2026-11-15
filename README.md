@@ -2,7 +2,9 @@
 
 AI-assisted network troubleshooting helper with mandatory human review, built
 for the Cisco AICTE "Applied AI + Network Troubleshooting" project brief.
-
+## Setup
+Set your Gemini API keys as environment variables:
+GEMINI_API_KEY_1, GEMINI_API_KEY_2, GEMINI_API_KEY_3
 ## Files
 
 | File | Purpose |
