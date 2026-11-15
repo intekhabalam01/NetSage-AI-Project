@@ -1,0 +1,29 @@
+{
+  "hosts": [
+    {
+      "name": "PC1",
+      "ip": "192.168.30.10",
+      "mask": "255.255.255.0",
+      "expected_mask": "255.255.255.0",
+      "gateway": "192.168.30.1"
+    },
+    {
+      "name": "PC2",
+      "ip": "192.168.30.10",
+      "mask": "255.255.0.0",
+      "expected_mask": "255.255.255.0",
+      "gateway": "192.168.40.1"
+    }
+  ],
+  "interfaces": [
+    {
+      "device": "SW1",
+      "name": "Fa0/5",
+      "status": "administratively down"
+    }
+  ],
+  "defined_vlans": [10, 20, 30],
+  "required_vlans": [10, 20, 30, 40],
+  "routes": ["192.168.40.0/24 via 10.0.0.2"],
+  "required_routes": ["192.168.40.0/24", "172.16.0.0/24"]
+}

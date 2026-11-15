@@ -1,0 +1,272 @@
+[
+  {
+    "case_id": "C001",
+    "root_cause": "ACL 101 applied inbound on Gi0/1 is blocking traffic from 192.168.30.0/24 subnet.",
+    "confidence": "high",
+    "evidence": ["show access-lists: 'deny ip 192.168.30.0 0.0.0.255 any' present in ACL 101 applied inbound on Gi0/1"],
+    "next_command": "show running-config interface Gi0/1",
+    "osi_layer": "Layer 3/4",
+    "fix_steps": ["Modify ACL 101 to permit traffic from 192.168.30.0/24 to the server subnet.", "Re-apply the updated access-list on interface Gi0/1 inbound.", "Verify connectivity from VLAN 30 PC to the server using ping."]
+  },
+  {
+    "case_id": "C002",
+    "root_cause": "SW1-SW2 trunk link does not allow VLAN 20 in its allowed VLAN list.",
+    "confidence": "high",
+    "evidence": ["show interfaces trunk: SW1-SW2 trunk allowed vlans 1,10 (VLAN 20 missing from allowed list)"],
+    "next_command": "show running-config interface switchport",
+    "osi_layer": "Layer 2",
+    "fix_steps": ["Access the trunk interfaces on SW1 and SW2.", "Execute 'switchport trunk allowed vlan add 20' on both sides.", "Verify with 'show interfaces trunk' that VLAN 20 is allowed and forwarding."]
+  },
+  {
+    "case_id": "C003",
+    "root_cause": "Incorrect default gateway configured on PC3 (set to 192.168.10.254 instead of 192.168.10.1).",
+    "confidence": "high",
+    "evidence": ["show ip interface brief on PC3: IP 192.168.10.5, Gateway configured as 192.168.10.254 (does not match R1's actual interface IP 192.168.10.1)"],
+    "next_command": "show ip interface brief",
+    "osi_layer": "Layer 3",
+    "fix_steps": ["Open IP configuration settings on PC3.", "Update default gateway address to 192.168.10.1.", "Test gateway ping from PC3."]
+  },
+  {
+    "case_id": "C004",
+    "root_cause": "Parent physical interface GigabitEthernet0/0 on R1 is administratively down.",
+    "confidence": "high",
+    "evidence": ["show ip interface brief on R1: GigabitEthernet0/0 status administratively down, protocol down"],
+    "next_command": "show running-config interface GigabitEthernet0/0",
+    "osi_layer": "Layer 1",
+    "fix_steps": ["Enter interface configuration mode for GigabitEthernet0/0 on R1.", "Run the 'no shutdown' command.", "Confirm interface and subinterface GigabitEthernet0/0.10 state changes to up/up."]
+  },
+  {
+    "case_id": "C005",
+    "root_cause": "The DHCP pool for VLAN30 has exhausted all available IP addresses.",
+    "confidence": "high",
+    "evidence": ["show ip dhcp pool VLAN30: Total addresses 10, Leased addresses 10, Available 0"],
+    "next_command": "show ip dhcp binding",
+    "osi_layer": "Layer 7 (DHCP)",
+    "fix_steps": ["Expand the subnet scope for dhcp pool VLAN30 on R1.", "Clear inactive DHCP leases using 'clear ip dhcp binding *' if applicable.", "Verify pool availability with 'show ip dhcp pool VLAN30'."]
+  },
+  {
+    "case_id": "C006",
+    "root_cause": "Physical cable disconnection between the VLAN40 PCs and the access switch is preventing DHCP discovery packets from reaching R1.",
+    "confidence": "medium",
+    "evidence": ["ipconfig on PC: APIPA address 169.254.x.x assigned"],
+    "next_command": "show run | section dhcp",
+    "osi_layer": "Layer 1",
+    "fix_steps": ["Re-seat or replace the Ethernet cable between the PC and the access switch.", "Verify link light status on the switch port.", "Retry DHCP renewal on the PC."]
+  },
+  {
+    "case_id": "C007",
+    "root_cause": "PC is configured with an incorrect/unreachable DNS server IP (8.8.4.8 instead of 8.8.8.8).",
+    "confidence": "high",
+    "evidence": ["show ip interface brief on PC: DNS server configured as 8.8.4.8 (unreachable, typo); ping 8.8.4.8 request timed out"],
+    "next_command": "show ip interface brief",
+    "osi_layer": "Layer 7 (DNS)",
+    "fix_steps": ["Open network adapter DNS settings on PC.", "Change primary DNS server IP to 8.8.8.8.", "Test domain name resolution using ping or nslookup."]
+  },
+  {
+    "case_id": "C008",
+    "root_cause": "R1 lacks a routing table entry to reach the HQ DNS server network (10.0.0.53/32).",
+    "confidence": "high",
+    "evidence": ["show ip route on R1: no route to 10.0.0.53/32 (DNS server subnet); ping 10.0.0.53 from R1 fails"],
+    "next_command": "show ip route",
+    "osi_layer": "Layer 3",
+    "fix_steps": ["Configure a static route or enable dynamic routing protocol propagation to 10.0.0.0/24 on R1.", "Verify reachability with 'ping 10.0.0.53' from R1.", "Test DNS resolution from Branch PCs."]
+  },
+  {
+    "case_id": "C009",
+    "root_cause": "Appears to be a generic Layer 3 connectivity issue, possibly related to ACL filtering between the branch and HQ.",
+    "confidence": "medium",
+    "evidence": ["show ip route on R1: no entry for 172.16.0.0/24 (HQ subnet)"],
+    "next_command": "show access-lists",
+    "osi_layer": "Layer 3/4",
+    "fix_steps": ["Review ACLs applied on R1 and R2 for statements blocking the HQ subnet.", "Check inbound and outbound ACL direction on relevant interfaces.", "Retest connectivity after any ACL changes."]
+  },
+  {
+    "case_id": "C010",
+    "root_cause": "Routing loop caused by misconfigured next-hop on R2 pointing back to R1 for subnet 172.16.0.0/24.",
+    "confidence": "high",
+    "evidence": ["show ip route on R2: static route 172.16.0.0/24 via R1 (should be via R3); show ip route on R1: static route back via R2 for same network"],
+    "next_command": "show run | include ip route",
+    "osi_layer": "Layer 3",
+    "fix_steps": ["Remove incorrect static route on R2: 'no ip route 172.16.0.0 255.255.255.0 <R1-IP>'.", "Add correct static route on R2 pointing to R3.", "Run traceroute to verify loop resolution."]
+  },
+  {
+    "case_id": "C011",
+    "root_cause": "Guest SSID is assigned to default VLAN 1 and lacks access restrictions to internal subnets.",
+    "confidence": "high",
+    "evidence": ["show access-lists GUEST_ISOLATION: ACL has no deny entry for internal server subnet; show vlan brief: guest SSID mapped to VLAN 1 instead of dedicated guest VLAN"],
+    "next_command": "show run section wlan",
+    "osi_layer": "Layer 2/3",
+    "fix_steps": ["Re-map guest SSID to dedicated Guest VLAN.", "Update GUEST_ISOLATION ACL to deny traffic to internal server subnets.", "Apply updated ACL to guest interface/VLAN."]
+  },
+  {
+    "case_id": "C012",
+    "root_cause": "Access list 105 is not applied to vty lines using 'access-class' command.",
+    "confidence": "high",
+    "evidence": ["show access-lists 105: 'deny tcp any any eq 23' present but show run | section line vty shows 'access-class' not applied to vty 0 4"],
+    "next_command": "show run | section line vty",
+    "osi_layer": "Layer 4",
+    "fix_steps": ["Enter line configuration mode: 'line vty 0 4'.", "Apply access list using 'access-class 105 in'.", "Test Telnet connection to verify access restriction."]
+  },
+  {
+    "case_id": "C013",
+    "root_cause": "Wildcard mask 0.0.0.15 in ACL 110 restricts permitted range to 192.168.1.0-192.168.1.15 instead of /24.",
+    "confidence": "high",
+    "evidence": ["show access-lists 110: 'permit ip 192.168.1.0 0.0.0.15 any' (wildcard mask too restrictive, only covers .0-.15)"],
+    "next_command": "show access-lists 110",
+    "osi_layer": "Layer 3/4",
+    "fix_steps": ["Remove incorrect permit rule from ACL 110.", "Add rule 'permit ip 192.168.1.0 0.0.0.255 any' with correct wildcard mask.", "Verify traffic from hosts in range .16-.254."]
+  },
+  {
+    "case_id": "C014",
+    "root_cause": "NAT inside/outside commands are not applied to R1 interfaces.",
+    "confidence": "high",
+    "evidence": ["show ip nat translations: empty; show run | section nat: 'ip nat inside'/'ip nat outside' not applied to any interface"],
+    "next_command": "show running-config interface",
+    "osi_layer": "Layer 3",
+    "fix_steps": ["Apply 'ip nat inside' on the LAN interface of R1.", "Apply 'ip nat outside' on the WAN/ISP interface of R1.", "Verify translation generation using 'show ip nat translations'."]
+  },
+  {
+    "case_id": "C015",
+    "root_cause": "NAT translation table timeout or a general ACL match issue is preventing new translations from being created.",
+    "confidence": "medium",
+    "evidence": ["show ip nat statistics: pool addresses exhausted"],
+    "next_command": "show access-lists",
+    "osi_layer": "Layer 3/4",
+    "fix_steps": ["Review the NAT ACL for incorrect permit/deny statements.", "Clear existing NAT translations with 'clear ip nat translation *'.", "Retest and monitor 'show ip nat statistics' for translation failures."]
+  },
+  {
+    "case_id": "C016",
+    "root_cause": "Switch port FastEthernet0/5 is administratively shut down.",
+    "confidence": "high",
+    "evidence": ["show interfaces Fa0/5: Fa0/5 is administratively down, line protocol is down"],
+    "next_command": "show running-config interface Fa0/5",
+    "osi_layer": "Layer 1",
+    "fix_steps": ["Enter configuration mode for interface FastEthernet0/5 on SW1.", "Execute 'no shutdown'.", "Confirm physical link status changes to up/up."]
+  },
+  {
+    "case_id": "C017",
+    "root_cause": "Duplex mismatch between SW1 Fa0/6 (half-duplex) and SW2 Fa0/1 (full-duplex).",
+    "confidence": "high",
+    "evidence": ["show interfaces Fa0/6: 100Mb/s, half-duplex; show interfaces Fa0/1 on SW2: 100Mb/s, full-duplex"],
+    "next_command": "show running-config interface Fa0/6",
+    "osi_layer": "Layer 1/2",
+    "fix_steps": ["Access interface Fa0/6 on SW1.", "Set duplex mode to full: 'duplex full' (or set auto-negotiation on both ends).", "Verify duplex alignment and confirm absence of interface collision errors."]
+  },
+  {
+    "case_id": "C018",
+    "root_cause": "Subnet mask configured on PC is /30 (255.255.255.252) instead of /24 (255.255.255.0).",
+    "confidence": "high",
+    "evidence": ["show ip interface brief on PC: subnet mask 255.255.255.252 (/30) instead of 255.255.255.0 (/24), splitting the subnet incorrectly"],
+    "next_command": "show ip interface brief",
+    "osi_layer": "Layer 3",
+    "fix_steps": ["Open IP configuration settings on PC.", "Update subnet mask to 255.255.255.0.", "Test ping connectivity to other PCs in 192.168.5.0/24."]
+  },
+  {
+    "case_id": "C019",
+    "root_cause": "Switch port physical cable is intermittently disconnected or the interface is experiencing hardware failure.",
+    "confidence": "medium",
+    "evidence": ["show arp on SW1: 192.168.1.50 mapped to two different MAC addresses at different times"],
+    "next_command": "show interfaces status",
+    "osi_layer": "Layer 1",
+    "fix_steps": ["Re-seat cabling on the affected switch ports.", "Swap the suspect cable with a known-good one.", "Monitor 'show interfaces' for CRC/input errors."]
+  },
+  {
+    "case_id": "C020",
+    "root_cause": "Spanning Tree port costs are unadjusted, causing STP to block the 1Gb link instead of the 100Mb link.",
+    "confidence": "high",
+    "evidence": ["show spanning-tree vlan 10: one trunk port role is 'Blocking' as expected by STP, but the active link is the lower-bandwidth 100Mb link instead of the 1Gb link (port cost not tuned)"],
+    "next_command": "show spanning-tree vlan 10",
+    "osi_layer": "Layer 2",
+    "fix_steps": ["Adjust STP port cost on 100Mb interface or lower port cost on 1Gb interface.", "Verify STP topology state with 'show spanning-tree vlan 10'.", "Confirm 1Gb interface is in Forwarding state."]
+  },
+  {
+    "case_id": "C021",
+    "root_cause": "Native VLAN mismatch across trunk link (SW1 native VLAN 1 vs SW2 native VLAN 99).",
+    "confidence": "high",
+    "evidence": ["show interfaces trunk: SW1 native VLAN 1, SW2 native VLAN 99 on the same trunk link; %CDP-4-NATIVE_VLAN_MISMATCH logged"],
+    "next_command": "show interfaces trunk",
+    "osi_layer": "Layer 2",
+    "fix_steps": ["Access switchport configuration on SW1 and SW2 trunk ports.", "Set matching native VLAN on both sides (e.g., 'switchport trunk native vlan 99').", "Verify CDP native VLAN mismatch errors cease."]
+  },
+  {
+    "case_id": "C022",
+    "root_cause": "SSID broadcast is disabled ('no broadcast-ssid') on Access Point AP1.",
+    "confidence": "high",
+    "evidence": ["show run | section wlan: SSID 'Corp-WiFi' configured with 'no broadcast-ssid' (hidden network) though users expect it to be visible"],
+    "next_command": "show run section wlan",
+    "osi_layer": "Layer 2 (Wireless)",
+    "fix_steps": ["Enter WLAN configuration mode for 'Corp-WiFi' on AP1.", "Enable SSID broadcasting.", "Verify SSID visibility on wireless client devices."]
+  },
+  {
+    "case_id": "C023",
+    "root_cause": "WPA2 Pre-Shared Key mismatch between AP configuration ('Cisco123') and distributed client password ('Cisco1234').",
+    "confidence": "high",
+    "evidence": ["show run | section wlan: pre-shared key configured as 'Cisco123' but the documented/distributed password is 'Cisco1234' (mismatch)"],
+    "next_command": "show run section wlan",
+    "osi_layer": "Layer 2 (Wireless)",
+    "fix_steps": ["Update pre-shared key on AP1 to match intended password ('Cisco1234').", "Save WLAN configuration.", "Reconnect client devices using distributed password."]
+  },
+  {
+    "case_id": "C024",
+    "root_cause": "Co-channel interference caused by neighboring APs (AP1 and AP2) both operating on channel 6.",
+    "confidence": "high",
+    "evidence": ["show wlan statistics: AP1 and AP2 both configured on channel 6 (overlapping), high co-channel interference reported"],
+    "next_command": "show wlan statistics",
+    "osi_layer": "Layer 1 (Wireless)",
+    "fix_steps": ["Change radio channel of AP2 to a non-overlapping channel (e.g., channel 1 or 11).", "Verify interference levels drop in 'show wlan statistics'.", "Test client stability on both APs."]
+  },
+  {
+    "case_id": "C025",
+    "root_cause": "Switch port Fa0/4 was not assigned to VLAN 60 and remains in default VLAN 1.",
+    "confidence": "high",
+    "evidence": ["show run | section Gi0/0: Gi0/0.60 encapsulation dot1Q 60, ip address 192.168.60.254/24 -- but 'show vlan brief' shows Fa0/4 (VLAN60 host port) missing from VLAN60, still in default VLAN 1"],
+    "next_command": "show vlan brief",
+    "osi_layer": "Layer 2/3",
+    "fix_steps": ["Access interface Fa0/4 configuration on SW1.", "Run 'switchport access vlan 60'.", "Confirm Fa0/4 assignment under 'show vlan brief' and test ping to subinterface."]
+  },
+  {
+    "case_id": "C026",
+    "root_cause": "HSRP preempt is disabled and priorities are set to default (100) on both R1 and R2.",
+    "confidence": "high",
+    "evidence": ["show standby brief: R1 priority 100 (default), R2 priority 100 (default), preempt disabled on both -- failover relies on hello/hold timers only"],
+    "next_command": "show standby brief",
+    "osi_layer": "Layer 3",
+    "fix_steps": ["Increase primary router priority on R1: 'standby 1 priority 110'.", "Enable preempt on primary and standby routers: 'standby 1 preempt'.", "Test failover delay using interface shutdown."]
+  },
+  {
+    "case_id": "C027",
+    "root_cause": "Trunk encapsulation dot1Q negotiation failure between the switches is causing the port to go down.",
+    "confidence": "medium",
+    "evidence": ["show interfaces Fa0/8 status: err-disabled"],
+    "next_command": "show interfaces trunk",
+    "osi_layer": "Layer 2",
+    "fix_steps": ["Verify trunk encapsulation settings match on both switches.", "Hard-code encapsulation dot1q on the trunk ports.", "Re-enable the port and monitor for further errors."]
+  },
+  {
+    "case_id": "C028",
+    "root_cause": "ACL 120 is applied inbound on WAN interface Gi0/1 instead of outbound on LAN or outbound on WAN.",
+    "confidence": "high",
+    "evidence": ["show run | interface Gi0/1: 'ip access-group 120 in' (ACL 120 was written to filter outbound LAN traffic but applied inbound on the WAN interface)"],
+    "next_command": "show run interface Gi0/1",
+    "osi_layer": "Layer 3/4",
+    "fix_steps": ["Remove ACL 120 from Gi0/1 inbound using 'no ip access-group 120 in'.", "Apply ACL 120 on LAN interface Gi0/0 inbound or WAN Gi0/1 outbound as intended.", "Verify external inbound traffic to LAN operates normally."]
+  },
+  {
+    "case_id": "C029",
+    "root_cause": "SW1 management interface (Vlan1 SVI) is missing a default gateway configuration.",
+    "confidence": "high",
+    "evidence": ["show ip interface brief on SW1: Vlan1 up/up, IP address 192.168.1.2, but no default gateway configured ('show ip default-gateway' returns none)"],
+    "next_command": "show ip default-gateway",
+    "osi_layer": "Layer 3",
+    "fix_steps": ["Configure default gateway on SW1: 'ip default-gateway 192.168.1.1'.", "Verify configuration using 'show ip default-gateway'.", "Test remote management access across subnets."]
+  },
+  {
+    "case_id": "C030",
+    "root_cause": "NAT access-list only permits UDP traffic, preventing HTTP (TCP 80) and HTTPS (TCP 443) traffic from being translated.",
+    "confidence": "high",
+    "evidence": ["ping dns_server_ip: successful; show ip nat translations: DNS traffic (UDP 53) is translated, but HTTP (TCP 80) and HTTPS (TCP 443) sessions show no translation entries; NAT ACL only permits UDP traffic"],
+    "next_command": "show access-lists",
+    "osi_layer": "Layer 3/4",
+    "fix_steps": ["Update NAT ACL to permit all IP traffic (or include TCP ports 80/443).", "Clear active NAT translations with 'clear ip nat translation *'.", "Verify web browsing functionality and check 'show ip nat translations'."]
+  }
+]

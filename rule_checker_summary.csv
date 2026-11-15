@@ -1,0 +1,31 @@
+case_id,concept,checks_passed,checks_failed,agrees_with_expected,overall_result
+C001,ACL,11,1,True,FAIL
+C002,VLAN/Trunking,12,0,True,PASS
+C003,Gateway configuration,12,0,True,PASS
+C004,Interface status,12,0,True,PASS
+C005,DHCP,11,1,False,FAIL
+C006,DHCP,11,1,True,FAIL
+C007,DNS,12,0,True,PASS
+C008,Routing/DNS,12,0,True,PASS
+C009,Routing,11,1,True,FAIL
+C010,Routing,11,1,True,FAIL
+C011,ACL/VLAN Security,12,0,True,PASS
+C012,ACL,12,0,True,PASS
+C013,ACL,12,0,True,PASS
+C014,NAT,12,0,True,PASS
+C015,NAT,12,0,True,PASS
+C016,Interface status,12,0,True,PASS
+C017,Duplex/Speed,11,1,True,FAIL
+C018,IP Addressing,11,1,True,FAIL
+C019,IP Addressing,11,1,True,FAIL
+C020,Spanning Tree,12,0,True,PASS
+C021,VLAN/Trunking,12,0,True,PASS
+C022,Wireless,11,1,True,FAIL
+C023,Wireless,11,1,True,FAIL
+C024,Wireless,12,0,True,PASS
+C025,VLAN/Router-on-a-stick,12,0,True,PASS
+C026,First Hop Redundancy (HSRP),12,0,True,PASS
+C027,Port Security,12,0,True,PASS
+C028,ACL,12,0,True,PASS
+C029,Management/Gateway configuration,12,0,True,PASS
+C030,NAT,12,0,True,PASS
